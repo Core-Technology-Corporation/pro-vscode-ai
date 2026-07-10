@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 suite('Pro AI extension', () => {
   test('activates and registers its commands', async () => {
-    const extension = vscode.extensions.getExtension('servisofts.pro-vscode-ai');
+    const extension = vscode.extensions.getExtension('alvarosiles.pro-vscode-ai');
     assert.ok(extension, 'extension should be discoverable by id');
 
     await extension?.activate();
