@@ -1,0 +1,232 @@
+{
+  "name": "pro-vscode-ai",
+  "displayName": "Pro AI Assistant",
+  "description": "AI coding assistant with chat, inline edits, code review and multi-provider model support (Anthropic, OpenAI, Google, Ollama, LM Studio).",
+  "version": "0.0.1",
+  "publisher": "alvarosiles",
+  "private": true,
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alvarosiles/pro-vscode-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alvarosiles/pro-vscode-ai/issues"
+  },
+  "homepage": "https://github.com/alvarosiles/pro-vscode-ai#readme",
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=18.0.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "chat",
+    "copilot",
+    "anthropic",
+    "claude",
+    "openai",
+    "gemini",
+    "ollama"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "proAi.openChat",
+        "title": "Pro AI: Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "proAi.explain",
+        "title": "Pro AI: Explain Code",
+        "icon": "$(question)"
+      },
+      {
+        "command": "proAi.fix",
+        "title": "Pro AI: Fix Code",
+        "icon": "$(wrench)"
+      },
+      {
+        "command": "proAi.optimize",
+        "title": "Pro AI: Optimize Code",
+        "icon": "$(rocket)"
+      },
+      {
+        "command": "proAi.generate",
+        "title": "Pro AI: Generate Code",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "proAi.generateCommitMessage",
+        "title": "Pro AI: Generate Commit Message",
+        "icon": "$(git-commit)"
+      },
+      {
+        "command": "proAi.clearHistory",
+        "title": "Pro AI: Clear Chat History",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "proAi.selectModel",
+        "title": "Pro AI: Select Model",
+        "icon": "$(settings-gear)"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "proAi.explain",
+          "when": "editorHasSelection",
+          "group": "proAi@1"
+        },
+        {
+          "command": "proAi.fix",
+          "when": "editorHasSelection",
+          "group": "proAi@2"
+        },
+        {
+          "command": "proAi.optimize",
+          "when": "editorHasSelection",
+          "group": "proAi@3"
+        }
+      ],
+      "scm/title": [
+        {
+          "command": "proAi.generateCommitMessage",
+          "when": "scmProvider == git",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "proAi.clearHistory",
+          "when": "view == proAi.chatHistory",
+          "group": "navigation"
+        },
+        {
+          "command": "proAi.selectModel",
+          "when": "view == proAi.chatView",
+          "group": "navigation"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "proAi.openChat",
+        "key": "ctrl+alt+i",
+        "mac": "cmd+alt+i"
+      },
+      {
+        "command": "proAi.explain",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+alt+e",
+        "when": "editorHasSelection"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "proAi",
+          "title": "Pro AI",
+          "icon": "media/logo.svg"
+        }
+      ]
+    },
+    "views": {
+      "proAi": [
+        {
+          "type": "webview",
+          "id": "proAi.chatView",
+          "name": "Chat"
+        },
+        {
+          "id": "proAi.chatHistory",
+          "name": "History"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Pro AI Assistant",
+      "properties": {
+        "proAi.provider": {
+          "type": "string",
+          "enum": ["anthropic", "openai", "google", "ollama", "lmstudio"],
+          "default": "anthropic",
+          "description": "Active AI provider used for chat and agent commands."
+        },
+        "proAi.model": {
+          "type": "string",
+          "default": "claude-sonnet-5",
+          "description": "Model identifier to use with the selected provider."
+        },
+        "proAi.temperature": {
+          "type": "number",
+          "default": 0.3,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature for AI responses."
+        },
+        "proAi.maxTokens": {
+          "type": "number",
+          "default": 4096,
+          "description": "Maximum output tokens for AI responses."
+        },
+        "proAi.ollama.baseUrl": {
+          "type": "string",
+          "default": "http://localhost:11434",
+          "description": "Base URL for a local Ollama server."
+        },
+        "proAi.lmstudio.baseUrl": {
+          "type": "string",
+          "default": "http://localhost:1234/v1",
+          "description": "Base URL for a local LM Studio server (OpenAI-compatible)."
+        },
+        "proAi.contextLines": {
+          "type": "number",
+          "default": 200,
+          "description": "Maximum number of lines of surrounding code included as context."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsx scripts/build.ts",
+    "watch": "tsx scripts/build.ts --watch",
+    "typecheck": "tsc --noEmit -p ./",
+    "lint": "eslint src",
+    "test:unit": "vitest run",
+    "pretest:integration": "tsc -p tsconfig.test.json",
+    "test:integration": "vscode-test",
+    "package": "tsx scripts/package.ts",
+    "release": "tsx scripts/release.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.0",
+    "@google/generative-ai": "^0.21.0",
+    "openai": "^4.73.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.15.0",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "^1.85.0",
+    "typescript-eslint": "^8.15.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "@vscode/vsce": "^3.2.1",
+    "esbuild": "^0.24.0",
+    "eslint": "^9.15.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.5"
+  }
+}
