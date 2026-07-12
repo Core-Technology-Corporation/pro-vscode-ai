@@ -85,7 +85,7 @@ npm run release -- patch --publish   # bump de versión + publish a Marketplace
 
 ## Estructura del proyecto
 
-``` ddd
+```
 src/
 ├── extension.ts       # Punto de entrada, arma el contenedor de dependencias
 ├── commands/           # Comandos de la Paleta de Comandos
