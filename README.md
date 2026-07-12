@@ -52,7 +52,7 @@ en texto plano). Configúralas con el comando **Pro AI: Select Model**.
 | `Pro AI: Clear Chat History` | Borra el historial de chats |
 | `Pro AI: Select Model` | Cambia proveedor/modelo y configura API keys |
 
-## Desarrollo iii
+## Desarrollo
 
 ```bash
 npm install
