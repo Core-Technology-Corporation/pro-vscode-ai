@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pro AI Assistant</title>
+<meta name="description" content="Asistente de IA para VS Code con chat en streaming, comandos para explicar, corregir, optimizar y generar código, y mensajes de commit. Funciona con cinco proveedores, incluidos modelos locales.">
+<meta name="author" content="Alvaro Siles Estrada">
+<meta property="og:title" content="Pro AI Assistant">
+<meta property="og:description" content="Asistente de IA para VS Code con chat en streaming, comandos para explicar, corregir, optimizar y generar código, y mensajes de commit. Funciona con cinco proveedores, incluidos modelos locales.">
+<meta property="og:image" content="01-vista-principal.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6f5f1; --surface: #ffffff; --ink: #16181d; --ink-2: #4a4f5a; --ink-3: #7b808b;
+  --line: #e2e0d9; --accent: #1f5fbf; --accent-soft: #e8eef8; --code-bg: #f0eee8;
+  --shadow: 0 1px 2px rgba(20,22,28,.06), 0 8px 24px rgba(20,22,28,.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --surface: #171a1f; --ink: #e7e9ee; --ink-2: #a9aeb9; --ink-3: #777d89;
+    --line: #262a31; --accent: #6ea8ff; --accent-soft: #1a2433; --code-bg: #1d2127;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111317; --surface: #171a1f; --ink: #e7e9ee; --ink-2: #a9aeb9; --ink-3: #777d89;
+  --line: #262a31; --accent: #6ea8ff; --accent-soft: #1a2433; --code-bg: #1d2127;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 "IBM Plex Sans", system-ui, sans-serif; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+code, kbd, pre, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+code { font-size: .88em; background: var(--code-bg); padding: .1em .35em; border-radius: 4px; }
+kbd { font-size: .8em; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: .05em .4em; background: var(--surface); }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+header.top { border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; justify-content: space-between; align-items: center; height: 56px; font-size: 14px; }
+.brand { color: var(--ink); font-weight: 600; letter-spacing: .01em; }
+.brand span { color: var(--ink-3); font-weight: 400; }
+.top nav { display: flex; gap: 20px; align-items: center; }
+.top nav a { color: var(--ink-2); }
+.theme-btn { background: none; border: 1px solid var(--line); color: var(--ink-2); border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; }
+.hero { padding: 72px 0 40px; }
+.kicker { font: 500 12px/1 "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .12em; color: var(--accent); }
+h1 { font-size: clamp(34px, 5vw, 52px); line-height: 1.08; letter-spacing: -.02em; margin: 16px 0 18px; font-weight: 600; }
+.lead { font-size: 19px; color: var(--ink-2); max-width: 760px; margin: 0; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 26px 0 0; padding: 0; list-style: none; }
+.tags li { font: 12.5px "IBM Plex Mono", monospace; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px; color: var(--ink-2); background: var(--surface); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 8px; font-weight: 500; font-size: 15px; border: 1px solid var(--line); color: var(--ink); background: var(--surface); }
+.btn.primary { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.btn:hover { text-decoration: none; opacity: .9; }
+.meta { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--line); border-radius: 10px; background: var(--surface); margin: 44px 0 0; }
+.meta div { padding: 16px 20px; border-left: 1px solid var(--line); }
+.meta div:first-child { border-left: 0; }
+.meta dt { font: 500 11px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); }
+.meta dd { margin: 4px 0 0; font-weight: 500; }
+section { padding: 56px 0; border-top: 1px solid var(--line); }
+.sec-head { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+.sec-label { font: 500 12px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-3); padding-top: 6px; }
+.sec-label b { display: block; color: var(--accent); font-weight: 500; margin-bottom: 4px; }
+h2 { font-size: 26px; letter-spacing: -.01em; margin: 0 0 18px; font-weight: 600; }
+p { margin: 0 0 14px; }
+.body { color: var(--ink-2); }
+.body strong { color: var(--ink); font-weight: 600; }
+.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 8px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+.card h3 { margin: 0 0 6px; font-size: 13px; font: 500 12px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .1em; color: var(--ink-3); }
+.card p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.gallery { display: grid; gap: 28px; }
+figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+figure button { all: unset; display: block; cursor: zoom-in; width: 100%; }
+figure img { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--line); }
+figcaption { padding: 14px 18px; font-size: 15px; color: var(--ink-2); display: flex; gap: 14px; }
+figcaption .n { font: 500 12px "IBM Plex Mono", monospace; color: var(--accent); padding-top: 3px; white-space: nowrap; }
+figcaption strong { color: var(--ink); }
+.features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.feature { padding: 20px 22px; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.feature:nth-child(-n+2) { border-top: 0; }
+.feature:nth-child(odd) { border-left: 0; }
+.feature h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+.feature p { margin: 0; color: var(--ink-2); font-size: 15px; }
+pre.diagram { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; overflow-x: auto; font-size: 13px; line-height: 1.6; color: var(--ink); margin: 0 0 22px; }
+ul.notes { margin: 0; padding: 0; list-style: none; }
+ul.notes li { position: relative; padding-left: 22px; margin-bottom: 10px; color: var(--ink-2); }
+ul.notes li::before { content: "—"; position: absolute; left: 0; color: var(--ink-3); }
+table.stack { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 15px; }
+table.stack th, table.stack td { text-align: left; padding: 12px 18px; border-top: 1px solid var(--line); vertical-align: top; }
+table.stack tr:first-child th, table.stack tr:first-child td { border-top: 0; }
+table.stack th { width: 180px; font: 500 12px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); padding-top: 15px; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.cols .card h3 { margin-bottom: 12px; }
+.cols ul.notes li { font-size: 15px; }
+.btn.ghost { background: transparent; }
+.small { font-size: 12px; color: var(--ink-3); }
+.cols > * { min-width: 0; }
+.cols.install { grid-template-columns: 1fr; margin-top: 18px; }
+.install .card { display: grid; grid-template-columns: 220px 1fr auto; align-items: center; gap: 12px 24px; }
+.install .card h3 { margin: 0; }
+.install .card .card-actions { margin-top: 0; justify-content: flex-end; }
+.install .card > * { min-width: 0; }
+@media (max-width: 860px) { .install .card { grid-template-columns: minmax(0, 1fr); } .install .card .card-actions { justify-content: flex-start; } }
+.install .card p { margin: 0; }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+.card-actions .btn { padding: 8px 14px; font-size: 14px; }
+.cmd { display: flex; align-items: center; gap: 8px; background: var(--code-bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 8px 8px 12px; }
+.cmd code { background: none; padding: 0; font-size: 12.5px; overflow-x: auto; white-space: nowrap; flex: 1; min-width: 0; }
+.copy { flex: none; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); border-radius: 6px; padding: 3px 10px; font: 12px "IBM Plex Sans", sans-serif; cursor: pointer; }
+footer { border-top: 1px solid var(--line); padding: 36px 0 56px; font-size: 14px; color: var(--ink-3); }
+footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+dialog { border: 0; padding: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+dialog::backdrop { background: rgba(10,12,16,.82); }
+dialog img { display: block; max-width: 96vw; max-height: 94vh; border-radius: 8px; }
+@media (max-width: 860px) {
+  .sec-head { grid-template-columns: 1fr; gap: 12px; }
+  .trio, .cols { grid-template-columns: 1fr; }
+  .meta { grid-template-columns: repeat(2, 1fr); }
+  .meta div:nth-child(3) { border-left: 0; }
+  .meta div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .features { grid-template-columns: 1fr; }
+  .feature { border-left: 0 !important; border-top: 1px solid var(--line) !important; }
+  .feature:first-child { border-top: 0 !important; }
+  .top nav a.hide-sm { display: none; }
+}
+@media (max-width: 480px) {
+  .wrap { padding: 0 16px; }
+  .hero { padding-top: 48px; }
+  table.stack th { width: 110px; padding-left: 14px; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="https://github.com/alvarosiles">Alvaro Siles Estrada <span>/ proyectos</span></a>
+    <nav>
+      <a class="hide-sm" href="#capturas">Capturas</a>
+      <a class="hide-sm" href="#arquitectura">Arquitectura</a>
+      <a href="#instalacion">Instalar</a>
+      <a href="https://github.com/alvarosiles/pro-vscode-ai">Código</a>
+      <button class="theme-btn" id="theme" type="button" aria-label="Cambiar tema">Tema</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap hero">
+    <div class="kicker">Extensión de VS Code · Inteligencia artificial</div>
+    <h1>Pro AI Assistant</h1>
+    <p class="lead">Asistente de IA para VS Code con chat en streaming, comandos para explicar, corregir, optimizar y generar código, y mensajes de commit. Funciona con cinco proveedores, incluidos modelos locales.</p>
+    <ul class="tags"><li>TypeScript</li><li>VS Code API</li><li>Anthropic</li><li>OpenAI</li><li>Gemini</li><li>Ollama</li><li>Vitest</li></ul>
+    <div class="actions">
+      <a class="btn primary" href="vscode:extension/alvarosiles.pro-vscode-ai">Instalar en VS Code</a>
+      <a class="btn" href="descarga/pro-vscode-ai-0.0.1.vsix" download>Descargar .vsix <span class="mono small">205 KB</span></a>
+      <a class="btn" href="https://marketplace.visualstudio.com/items?itemName=alvarosiles.pro-vscode-ai" target="_blank" rel="noopener">Marketplace ↗</a>
+      <a class="btn ghost" href="https://github.com/alvarosiles/pro-vscode-ai" target="_blank" rel="noopener">Código ↗</a>
+    </div>
+    <dl class="meta"><div><dt>Versión</dt><dd>0.0.1</dd></div><div><dt>Estado</dt><dd>Publicada · versión inicial</dd></div><div><dt>Periodo</dt><dd>jul 2026</dd></div><div><dt>Proveedores</dt><dd>5</dd></div></dl>
+  </div>
+
+  <section id="resumen">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>01</b>Resumen</div>
+      <div>
+        <h2>El proyecto</h2>
+        <div class="body"><p>Pro AI Assistant integra modelos de lenguaje en el flujo de trabajo de VS Code: un panel de <strong>chat con streaming</strong>, comandos sobre el código seleccionado (Explain, Fix, Optimize), generación de código a partir de una instrucción y <strong>mensajes de commit</strong> generados desde el diff de Git.</p><p>La interfaz está separada del modelo mediante un patrón adaptador, así que el mismo flujo funciona con Anthropic, OpenAI y Google Gemini, o con modelos locales en Ollama y LM Studio.</p></div>
+        <div class="trio">
+          <div class="card"><h3>Problema</h3><p>Muchos asistentes de código dependen de un solo proveedor o de un servicio en la nube, lo que limita el control sobre el costo, la privacidad y el modelo.</p></div>
+          <div class="card"><h3>Objetivo</h3><p>Construir un asistente extensible y con varios proveedores, organizado en capas: servicios, agentes y adaptadores de modelos.</p></div>
+          <div class="card"><h3>Público</h3><p>Desarrolladores que quieren IA en el editor y control sobre qué proveedor y modelo usar.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="capturas">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>02</b>Capturas</div>
+      <div>
+        <h2>En funcionamiento</h2>
+        <div class="gallery">
+          <figure>
+            <button type="button" data-full="01-vista-principal.png" aria-label="Ampliar: Vista principal"><img src="01-vista-principal.png" alt="Vista principal de Pro AI Assistant" width="1920" height="1042" loading="eager"></button>
+            <figcaption><span class="n">01</span><span><strong>Vista principal.</strong> Panel <strong>Pro AI</strong> (Chat e History) junto al servicio de IA, con el modelo activo en la barra de estado.</span></figcaption>
+          </figure>
+          <figure>
+            <button type="button" data-full="02-funcionalidad-principal.png" aria-label="Ampliar: Funcionalidad principal"><img src="02-funcionalidad-principal.png" alt="Funcionalidad principal de Pro AI Assistant" width="1920" height="1042" loading="lazy"></button>
+            <figcaption><span class="n">02</span><span><strong>Funcionalidad principal.</strong> Comando <strong>Select Model</strong>: selector de los cinco proveedores junto a la fábrica <code>createModelProvider</code>.</span></figcaption>
+          </figure>
+          <figure>
+            <button type="button" data-full="03-funcionalidad-complementaria.png" aria-label="Ampliar: Funcionalidad complementaria"><img src="03-funcionalidad-complementaria.png" alt="Funcionalidad complementaria de Pro AI Assistant" width="1920" height="1042" loading="lazy"></button>
+            <figcaption><span class="n">03</span><span><strong>Funcionalidad complementaria.</strong> Paleta de comandos con los comandos <strong>Pro AI</strong> y sus atajos.</span></figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="funcionalidades">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>03</b>Funcionalidades</div>
+      <div>
+        <h2>Qué hace</h2>
+        <div class="features"><div class="feature"><h3>Chat en streaming</h3><p>Webview con respuesta fragmento a fragmento e historial persistente en un árbol propio.</p></div><div class="feature"><h3>Acciones sobre código</h3><p>Explain, Fix y Optimize desde el menú contextual, como Quick Fixes o con <kbd>Ctrl+Alt+E</kbd>.</p></div><div class="feature"><h3>Generate</h3><p>Genera código a partir de una instrucción en lenguaje natural, con el lenguaje y el contexto del archivo.</p></div><div class="feature"><h3>Mensajes de commit</h3><p>Lee el diff staged o del working tree y escribe el mensaje en el campo de Source Control.</p></div><div class="feature"><h3>Varios proveedores</h3><p>Anthropic, OpenAI, Gemini, Ollama y LM Studio, intercambiables desde la barra de estado.</p></div><div class="feature"><h3>Inline completion</h3><p>Autocompletado experimental con debounce de 400 ms.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="arquitectura">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>04</b>Arquitectura</div>
+      <div>
+        <h2>Cómo está construido</h2>
+        <pre class="diagram">activate()
+  └─ AppContext ─┬─ SettingsService   (config + SecretStorage)
+                 ├─ AIService ──► createModelProvider()
+                 │                 ├─ AnthropicProvider  (messages.stream)
+                 │                 ├─ OpenAIProvider · GoogleProvider
+                 │                 └─ OllamaProvider · LMStudioProvider
+                 ├─ PromptService     (src/prompts/*.md)
+                 ├─ History · Context · Workspace
+                 └─ agents: chat · coding · refactor · review · docs
+providers: Webview · TreeView · CodeActions · InlineCompletion · StatusBar</pre>
+        <ul class="notes"><li>Inyección de dependencias manual: un único <code>AppContext</code> compartido por comandos y providers.</li><li>Cada proveedor implementa <code>chatStream()</code> como un <code>AsyncGenerator</code>, así que agregar uno no afecta a la UI.</li><li>Los prompts son plantillas Markdown versionadas, separadas del código.</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>05</b>Stack</div>
+      <div>
+        <h2>Tecnologías</h2>
+        <table class="stack"><tr><th scope="row">Lenguaje</th><td>TypeScript 5.7</td></tr><tr><th scope="row">Plataforma</th><td>VS Code API ^1.85: Webview, TreeView, CodeActions, SecretStorage</td></tr><tr><th scope="row">IA</th><td>@anthropic-ai/sdk · openai · @google/generative-ai · Ollama · LM Studio</td></tr><tr><th scope="row">Build</th><td>esbuild 0.24 + tsx</td></tr><tr><th scope="row">Calidad</th><td>Vitest 2 · @vscode/test-cli · ESLint 9 · tsc --noEmit</td></tr></table>
+      </div>
+    </div>
+  </section>
+
+  <section id="instalacion">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>06</b>Instalación</div>
+      <div>
+        <h2>Instalar la extensión</h2>
+        <p class="body">Versión publicada <code>0.0.1</code> · identificador <code>alvarosiles.pro-vscode-ai</code>. Elegí la opción que prefieras.</p>
+        <div class="cols install">
+          <div class="card">
+            <h3>Online · Marketplace</h3>
+            <p>Abre VS Code e instala la extensión desde el Marketplace oficial.</p>
+            <div class="card-actions">
+              <a class="btn primary" href="vscode:extension/alvarosiles.pro-vscode-ai">Abrir en VS Code</a>
+              <a class="btn" href="https://marketplace.visualstudio.com/items?itemName=alvarosiles.pro-vscode-ai" target="_blank" rel="noopener">Ver en Marketplace ↗</a>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Línea de comandos</h3>
+            <div class="cmd"><code>code --install-extension alvarosiles.pro-vscode-ai</code><button type="button" class="copy" data-copy="code --install-extension alvarosiles.pro-vscode-ai">Copiar</button></div>
+          </div>
+          <div class="card">
+            <h3>Local · archivo .vsix</h3>
+            <p>Sin conexión al Marketplace: descargá el paquete e instalalo con <em>Extensiones › … › Instalar desde VSIX</em> o con <code>code --install-extension pro-vscode-ai-0.0.1.vsix</code>.</p>
+            <div class="card-actions"><a class="btn" href="descarga/pro-vscode-ai-0.0.1.vsix" download>Descargar .vsix · 205 KB</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ingenieria">
+    <div class="wrap sec-head">
+      <div class="sec-label"><b>07</b>Ingeniería</div>
+      <div>
+        <h2>Decisiones y próximos pasos</h2>
+        <div class="cols">
+          <div class="card"><h3>Seguridad</h3><ul class="notes"><li>Las API keys se guardan en <code>SecretStorage</code>, nunca en <code>settings.json</code>.</li><li>El webview usa una Content-Security-Policy estricta (<code>default-src 'none'</code>, scripts con nonce).</li><li>Con Ollama o LM Studio se puede trabajar 100 % en local.</li></ul></div>
+          <div class="card"><h3>Retos técnicos</h3><ul class="notes"><li>Unificar APIs de streaming distintas en una sola interfaz.</li><li>Coordinar el streaming entre la extensión y el webview por mensajes.</li><li>Controlar la frecuencia de las peticiones del autocompletado inline.</li></ul></div>
+          <div class="card"><h3>Hoja de ruta</h3><ul class="notes"><li>Conectar los agentes <code>review</code> y <code>docs</code> a comandos.</li><li>Hacer opcional el autocompletado inline por lenguaje.</li><li>Ampliar las pruebas más allá de <code>utils/</code> y la activación.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Diseño, desarrollo y mantenimiento: <a href="https://github.com/alvarosiles">Alvaro Siles Estrada</a></span>
+    <span class="mono">Licencia MIT · <a href="https://github.com/alvarosiles/pro-vscode-ai">github.com/alvarosiles/pro-vscode-ai</a></span>
+  </div>
+</footer>
+
+<dialog id="viewer"><img alt=""></dialog>
+<script>
+(function () {
+  var root = document.documentElement, btn = document.getElementById('theme');
+  try { var saved = localStorage.getItem('theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  btn.addEventListener('click', function () {
+    var dark = root.getAttribute('data-theme') ? root.getAttribute('data-theme') === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    var next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+  });
+  var dlg = document.getElementById('viewer'), img = dlg.querySelector('img');
+  document.querySelectorAll('[data-full]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      img.src = b.getAttribute('data-full'); img.alt = b.getAttribute('aria-label');
+      if (dlg.showModal) dlg.showModal(); else window.open(img.src);
+    });
+  });
+  dlg.addEventListener('click', function () { dlg.close(); });
+  document.querySelectorAll('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var text = b.getAttribute('data-copy');
+      var done = function () { b.textContent = 'Copiado'; setTimeout(function () { b.textContent = 'Copiar'; }, 1500); };
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, function () {});
+    });
+  });
+})();
+</script>
+</body>
+</html>
