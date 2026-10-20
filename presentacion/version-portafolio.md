@@ -80,11 +80,10 @@ Anthropic, OpenAI, Google Gemini, Ollama, LM Studio y la extensión Git de VS Co
 - Conectar los agentes `review` y `docs` a comandos.
 - Limitar el autocompletado inline a lenguajes concretos o hacerlo opcional, por el costo en proveedores de pago.
 - Ampliar las pruebas más allá de `utils/` y la activación.
-- Publicar en el Marketplace; hoy es `0.0.1` y está marcado como `private`.
 
 ## Estado
 
-En desarrollo: versión `0.0.1`, *Unreleased* según el CHANGELOG. Existe un `.vsix` empaquetado en el repositorio.
+Publicada en el Visual Studio Code Marketplace como `alvarosiles.pro-vscode-ai` (versión inicial `0.0.1`, verificado el 2026-10-20). El CHANGELOG todavía la marca como *Unreleased* y `package.json` como `"private": true`, así que conviene actualizar esos dos campos.
 
 ## Capturas
 

@@ -122,7 +122,7 @@ TypeScript `^5.7`, esbuild `^0.24`, `@anthropic-ai/sdk ^0.32`, `openai ^4.73`, `
 
 ### Limitaciones conocidas
 
-- Estado *Unreleased* (`0.0.1`, `"private": true`).
+- Publicada en el Marketplace (`0.0.1`), aunque el CHANGELOG aún dice *Unreleased* y `package.json` tiene `"private": true`.
 - El *inline completion* está registrado para todos los lenguajes (`'*'`) y hace una petición al modelo por cada pausa de escritura, lo que puede generar costo con proveedores en la nube.
 - Los agentes `review` y `docs` no tienen comandos asociados.
 - Pruebas: 3 archivos de pruebas unitarias (`utils/`) y 1 de integración (activación).
