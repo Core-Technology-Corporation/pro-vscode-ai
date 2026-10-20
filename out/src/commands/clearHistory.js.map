@@ -1,0 +1,1 @@
+{"version":3,"file":"clearHistory.js","sourceRoot":"","sources":["../../../src/commands/clearHistory.ts"],"names":[],"mappings":";;AAGA,kDAKC;AAPD,uDAAkD;AAElD,SAAgB,mBAAmB,CAAC,GAAe;IACjD,OAAO,KAAK,IAAmB,EAAE;QAC/B,MAAM,GAAG,CAAC,OAAO,CAAC,KAAK,EAAE,CAAC;QAC1B,IAAA,aAAI,EAAC,4BAA4B,CAAC,CAAC;IACrC,CAAC,CAAC;AACJ,CAAC"}
